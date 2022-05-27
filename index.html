@@ -1,4 +1,716 @@
-17:10","value":0},
+
+ <!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Oracle AWR Smart Report</title>
+  <meta name="viewport" content="viewport-fit=cover,
+  width=device-width, initial-scale=1">
+  <script type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+  <style id="compiled-css" type="text/css">
+    @import url('https://static.oracle.com/cdn/jet/v7.1.0/default/css/alta/oj-alta-min.css');
+    .oracle-icon {width: 137px;height: 18px;}
+    .oracle-icon:before {
+
+    display: inline;
+    content: url("https://www.oracle.com/webfolder/technetwork/jet/css/images/oracle_logo.svg");
+    }
+    html:not([dir="rtl"]) .oracle-icon {padding-right: 4px;}
+    html[dir="rtl"] .oracle-icon {padding-left: 4px;}
+  </style>
+  <script type="text/javascript">
+    window.onload = function() {
+    require(['knockout', 'ojs/ojcore', 'jquery',
+            'ojs/ojarraytabledatasource',
+            'ojs/ojarraydataprovider',
+            'ojs/ojpagingdataproviderview',
+            'ojs/ojknockout',
+
+            'ojs/ojcheckboxset',
+            'ojs/ojtable',
+            'ojs/ojpagingcontrol',
+            'ojs/ojswitcher',
+            'ojs/ojcollapsible',
+            'ojs/ojnavigationlist',
+            'ojs/ojvalidation-datetime',
+            'ojs/ojvalidation-number'
+    ], function(ko, oj, $) {
+    'use strict';
+    let ViewModel = function(data) {
+      const self = this;
+      const numOptions = {style: 'decimal', pattern: '#,##0.####'};
+
+      const numberConverter =
+      oj.Validation.converterFactory("number").createConverter(numOptions);
+      this.formatNum = data => numberConverter.format(data);
+      this.attributes = ko.observableArray();
+      this.groups = ko.observableArray();
+      function getColumnTemplate(datatype) {
+        switch(datatype){
+        case 1:
+        return "numberCellTemplate";
+        default:
+        return null;
+        }
+      };
+
+      function initReportSection(section){
+        let data = section.data || [];
+        let dataProvider = new oj.ArrayDataProvider(data);
+        let pageSource = new oj.PagingDataProviderView(dataProvider);
+        let colSource = section.fields.map(field => {
+        return {
+          headerText: field.title,
+          field: field.id,
+          template: getColumnTemplate(field.dtype)
+        };});
+        return {
+          id: section.id,
+
+          title: section.title,
+          desc: section.desc,
+          cols: colSource,
+          source: pageSource,
+          data: section.data,
+          dataProvider: dataProvider
+        };
+      }
+      function initReportGroup(group){
+        let sections = [];
+        group.sections.forEach(section => {
+         sections.push(initReportSection(section));
+        });
+        let selection = ko.observable();
+
+        if (sections.length > 0){
+         selection(sections[0].id);
+        }
+        let sectionProvider = new oj.ArrayDataProvider(sections, {
+         keyAttributes: 'id'
+        });
+        let eventListener = function (event) {
+         selection(event.detail.value);
+        }
+        return {
+          id: group.id,
+          title: group.title,
+          sections: sectionProvider,
+
+          selectedItem: selection,
+          selectionChange: eventListener
+        };
+      }
+      function initReportData(report){
+        self.attributes.push({id: 'title', title: "Report Type", value: report.title});
+        self.attributes.push({id: 'creation', title: "Created", value: report.created});
+        self.attributes.push({id: 'dbid', title: "Database ID", value: report.range.dbid});
+        self.attributes.push({id: 'beg_snap', title: "Begin Snapshot", value: report.range.beg_snap});
+        self.attributes.push({id: 'end_snap', title: "End Snapshot", value: report.range.end_snap});
+        report.groups.forEach(group => {
+        self.groups.push(initReportGroup(group));
+        });
+
+      }
+      initReportData(data);
+    };
+    var jsonData =
+{
+"title":"ADAT Report",
+"desc":"This is the ADAT report.",
+"created":"10-AUG-20 01.27.14 PM -07:00",
+"range":{
+"dbid":2051501822,
+"beg_snap":1,
+"end_snap":7
+},
+
+"groups":[{
+"id":"METRICS_GROUP",
+"title":"Metrics",
+"desc":"Database metrics",
+"sections":[{
+"id":"SESSIONS",
+"title":"Sessions Metrics",
+"desc":"Logons and Average Active Sessions",
+"fields":
+[{
+"id":"metric_name",
+"title":"Metric name",
+"dtype":2
+
+},
+{
+"id":"btime",
+"title":"Time",
+"dtype":2
+},
+{
+"id":"value",
+"title":"Value",
+"dtype":1
+}],
+"data":[
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:26","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:24","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:23","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:22","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:23","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:06","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:05","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:42","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:36","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:34","value":0.1},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:33","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:15","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:15","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:14","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:08","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:07","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:03","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:56","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:12","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:54","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:40","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:28","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:27","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:25","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:25","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:22","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:16","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:08","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:03","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:59","value":0.1},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:32","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:29","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:28","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:28","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:28","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:26","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:25","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:25","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:30","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:29","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:09","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:08","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:07","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:35","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:31","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:12","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:08","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:49","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:44","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:11","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:52","value":0.1},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:45","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:44","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:43","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:42","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:41","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:40","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:24","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:19","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:16","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:15","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:15","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:22","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:17","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:13","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:03","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:00","value":0.1},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:36","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:31","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:29","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:24","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:22","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:31","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:25","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:24","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:23","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:30","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:42","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:41","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:39","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:10","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:09","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:06","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:05","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:01","value":0.5},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:01","value":0.1},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:55","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:51","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:48","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:46","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:43","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:11","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:56","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:48","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:30","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:29","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:17","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:12","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:09","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:01","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:33","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:26","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:25","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:21","value":0.6},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:28","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:28","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:13","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:12","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:08","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:05","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:33","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:22","value":0.5},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:13","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:13","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:08","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:04","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:04","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:50","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:44","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:53","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:49","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:46","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:42","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:39","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:26","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:24","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:23","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:21","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:19","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:18","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:22","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:21","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:19","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:18","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:11","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:10","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:05","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:01","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:57","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:36","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:33","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:27","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:23","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:30","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:27","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:25","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:13","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:12","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:09","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:06","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:04","value":0.5},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:04","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:41","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:39","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:38","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:34","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:22","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:11","value":0.1},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:11","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:10","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:07","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:06","value":0.6},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:05","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:02","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:54","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:53","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:53","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:49","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:48","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:47","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:47","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:45","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:13","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:12","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:51","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:49","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:46","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:44","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:41","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:37","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:27","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:26","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:18","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:14","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:24","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:23","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:16","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:11","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:07","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:04","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:58","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:58","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:57","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:34","value":0.1},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:34","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:28","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:27","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:29","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:11","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:10","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:30","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:43","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:35","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:32","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:32","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:12","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:09","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 17:07","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:10","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:02","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:55","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:54","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:51","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:50","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:46","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:55","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:53","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:48","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:47","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:45","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:38","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:37","value":0.1},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:29","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:23","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:22","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:20","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:24","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:23","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:20","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:16","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:10","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:07","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:02","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:02","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:00","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:27","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:25","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:27","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:27","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:26","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:26","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 13:24","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:10","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 10:29","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:40","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:08","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:06","value":0.1},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:06","value":0.1},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:03","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:56","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:52","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:52","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:47","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:38","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:31","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:28","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:21","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:17","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:14","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:21","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:18","value":0},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:17","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:15","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:14","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:14","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:13","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:08","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:04","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:35","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:32","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:30","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:29","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:26","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 10:21","value":0.3},
+
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 13:31","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/03 21:11","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/03 21:07","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:40","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:38","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:37","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:37","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:36","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:14","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:10","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 17:09","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:09","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:07","value":0},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:52","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:45","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:13","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:56","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:55","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:54","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:51","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:50","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:50","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:43","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:39","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:30","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 18:20","value":0.1},
+
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:20","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:19","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:15","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:12","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:09","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:06","value":0.1},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:06","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:05","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 18:59","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:35","value":0},
+  {"metric_name":"Average Active Sessions","btime":"2020/08/04 19:31","value":0},
+  {"metric_name":"Logons Per Sec","btime":"2020/08/04 19:30","value":0}
+]
+
+},
+{
+"id":"CPU",
+"title":"CPU Metrics",
+"desc":"CPU Seconds Per Sec",
+"fields":
+[{
+"id":"metric_name",
+"title":"Metric name",
+"dtype":2
+},
+{
+"id":"btime",
+
+"title":"Time",
+"dtype":2
+},
+{
+"id":"value",
+"title":"Value",
+"dtype":1
+}],
+"data":[
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 10:25","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 13:31","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:31","value":4.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:10","value":0.8},
+
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/03 21:07","value":12.6},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:06","value":0.9},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:43","value":10.1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:42","value":2.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:39","value":9.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:38","value":2.5},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:32","value":0.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 17:15","value":1.9},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 17:10","value":4.5},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 17:08","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:10","value":1.4},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:09","value":0.9},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:05","value":0},
+
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:01","value":22.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:54","value":9.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:47","value":1.6},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:47","value":12.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:46","value":0.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:56","value":2.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:52","value":0.3},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:52","value":1.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:52","value":5.9},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:51","value":2.6},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:49","value":9.7},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:48","value":1.5},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:47","value":1.4},
+
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:42","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:41","value":3.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:30","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:30","value":2.5},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:29","value":1.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:23","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:22","value":1.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:21","value":1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:20","value":2.8},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:17","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:14","value":1},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:25","value":1.4},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:24","value":1.5},
+
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:14","value":9.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:07","value":0.1},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:05","value":1.4},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:00","value":4.3},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:33","value":2},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:31","value":2.9},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:27","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:26","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:25","value":0.1},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 10:23","value":1.3},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:29","value":6.3},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 13:28","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:26","value":2.3},
+
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/03 21:11","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/03 21:10","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/03 21:08","value":5.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:07","value":0.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/03 21:04","value":24.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:42","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:40","value":2.3},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:37","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:35","value":2.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:34","value":0.6},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:32","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 17:13","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 17:13","value":1.3},
+
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 17:08","value":0.9},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 17:07","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 17:06","value":30.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:09","value":9.5},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:06","value":0.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:05","value":1.5},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:02","value":0.9},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:01","value":4.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:49","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:48","value":2.9},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:12","value":4.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:50","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:45","value":0},
+
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:43","value":11.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:42","value":2.5},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:38","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:37","value":0.3},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:29","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:25","value":1.6},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:24","value":1.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:21","value":0.2},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:20","value":1.3},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:21","value":3.7},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:18","value":0.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:17","value":0.3},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:16","value":0},
+
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:16","value":1.2},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:12","value":2.1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:11","value":4.7},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:09","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:08","value":8.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:01","value":4.5},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:57","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:34","value":0.4},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:32","value":1.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:32","value":2.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:31","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:30","value":1.7},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:29","value":0},
+
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:28","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:27","value":0.9},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:26","value":2.6},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 10:22","value":1.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 13:29","value":1.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:25","value":3.3},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:23","value":4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/03 21:13","value":7.5},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/03 21:05","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/03 21:04","value":3.5},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 10:30","value":2},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:40","value":1.6},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:36","value":0.4},
+
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:36","value":1},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:34","value":1.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:22","value":18},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 17:12","value":6.6},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 17:09","value":1.3},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 17:08","value":6.7},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:08","value":1.8},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:04","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:04","value":0.8},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:03","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:02","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:56","value":3.6},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:50","value":2},
+
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:56","value":1.8},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:55","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:55","value":1.4},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:54","value":1.2},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:51","value":1.6},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:50","value":1.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:50","value":2.5},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:48","value":2.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:46","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:43","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:42","value":1.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:40","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:31","value":1.7},
+
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:25","value":1.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:21","value":5.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:19","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 18:19","value":1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:18","value":1.7},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:16","value":0},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:15","value":3.9},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:24","value":0.2},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:24","value":11.1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:22","value":6.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:21","value":0.3},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:18","value":2.7},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:15","value":2.6},
+
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:09","value":0.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:07","value":28.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:05","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:04","value":1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:03","value":1.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:59","value":19.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:58","value":0},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 19:35","value":0.1},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 19:29","value":11.8},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 19:26","value":1.5},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 10:25","value":1.4},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 10:25","value":2.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 10:24","value":0},
+
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 10:21","value":16.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 13:30","value":3.7},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/03 21:13","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:13","value":1.4},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:11","value":0.9},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:08","value":1.1},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/03 21:07","value":0},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/03 21:04","value":10.8},
+  {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:41","value":3.2},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 18:35","value":0.1},
+  {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 17:11","value":1.4},
+  {"metric_name":"CPU Usage Per Sec","btime":"2020/08/04 17:10","value":0},
   {"metric_name":"Background CPU Usage Per Sec","btime":"2020/08/04 17:10","value":1.6},
 
   {"metric_name":"Host CPU Usage Per Sec","btime":"2020/08/04 18:10","value":2.4},
